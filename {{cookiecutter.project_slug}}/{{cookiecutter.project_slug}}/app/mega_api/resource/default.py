@@ -3,7 +3,7 @@ from {{cookiecutter.project_slug}}.common.webeasy import schema
 from {{cookiecutter.project_slug}}.version import __version__
 
 
-class TableSectionBind:
+class VersionResource:
 
     route = '/api/v1/version'
 
