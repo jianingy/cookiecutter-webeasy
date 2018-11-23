@@ -6,14 +6,10 @@ from marshmallow.exceptions import ValidationError
 import falcon
 import functools
 import logging
-import logzero
 import os
 import pike.discovery.py as discovery
 import traceback
 import ujson
-
-
-logzero.formatter(logging.Formatter('[%(levelname)s] %(message)s'))
 
 
 def _catch_all(error, req, resp, params):
