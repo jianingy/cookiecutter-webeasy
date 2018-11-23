@@ -1,0 +1,14 @@
+Cython
+colorlog
+falcon
+gevent
+geventhttpclient
+gunicorn
+logzero
+marshmallow
+marshmallow-enum
+peewee
+pike
+psycopg2-binary
+python-dateutil
+ujson

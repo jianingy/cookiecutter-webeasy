@@ -1,0 +1,11 @@
+coverage
+flake8
+flake8-colors
+flake8-quotes
+honcho
+pytest
+pytest-dotenv
+pytest-mock
+python-dotenv
+tox
+werkzeug

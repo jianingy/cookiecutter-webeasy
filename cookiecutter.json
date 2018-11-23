@@ -1,0 +1,8 @@
+{
+    "full_name": "Jianing Yang",
+    "email": "jianingy.yang@gmail.com",
+    "project_name": "webeasy",
+    "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_').replace('-', '_') }}",
+    "project_short_description": "a web service",
+    "version": "0.1.0"
+}
