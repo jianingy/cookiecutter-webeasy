@@ -1,29 +1,58 @@
 # -*- coding: UTF-8 -*-
-from logzero import logger as LOG
 from marshmallow import Schema
 from marshmallow.exceptions import ValidationError
 
 import falcon
 import functools
-import logging
+import logzero
 import os
 import pike.discovery.py as discovery
+import raven
 import traceback
 import ujson
 
+from {{cookiecutter.project_slug}}.common.exceptions import ClientException
+
+_LOG_FORMAT = '%(color)s[%(levelname)s] %(message)s%(end_color)s'
+LOG = logzero.setup_logger(formatter=logzero.LogFormatter(fmt=_LOG_FORMAT))
+RAVEN_CLIENT = raven.Client(os.environ['SENTRY_DSN'])
+
 
 def _catch_all(error, req, resp, params):
+    if not (hasattr(error, 'alert_sentry') and error.alert_sentry):
+        data = {
+            'request': {
+                'url': req.url,
+                'method': req.method,
+                'query_string': req.query_string,
+                'env': req.env,
+                'data': req.params,
+                'headers': req.headers,
+            },
+        }
+        message = (error.title if isinstance(error, falcon.HTTPError)
+                   else str(error))
+        RAVEN_CLIENT.captureException(message=message, data=data)
+    if isinstance(error, ClientException):
+        data = error.data if hasattr(error, 'data') else None
+        code = error.error_code if hasattr(error, 'error_code') else -1
+        reason = error.message if hasattr(error, 'message') else str(error)
+        retval = dict(reason=reason, data=data, code=code)
+        raise falcon.HTTPStatus(error.http_status_code,
+                                body=ujson.dumps(retval))
     if not isinstance(error, falcon.HTTPError):
-        detail = error.message if hasattr(error, 'message') else ''
+        data = error.data if hasattr(error, 'data') else None
         tb = ''.join(traceback.format_tb(error.__traceback__))
         LOG.error('v' * 78)
         LOG.error(f'{error} {type(error)} \n{tb}'.strip())
         LOG.error('^' * 78)
-        error = dict(reason=str(error), detail=detail, code=-1)
+        code = error.error_code if hasattr(error, 'error_code') else -1
+        reason = error.message if hasattr(error, 'message') else str(error)
+        retval = dict(reason=reason, data=data, code=code)
         if bool(os.environ.get('DEBUG', '')):
-            error['traceback'] = tb
+            retval['traceback'] = tb
         raise falcon.HTTPStatus(falcon.HTTP_INTERNAL_SERVER_ERROR,
-                                body=ujson.dumps(error))
+                                body=ujson.dumps(retval))
     else:
         raise error
 
@@ -60,7 +89,7 @@ def schema(query=None, data=None, reply=None):
         data = {}
         for key, value in formdata.items():
             if not key.endswith('[]'):
-                data[key] = value[-1]
+                data[key] = value[-1] if isinstance(value, list) else value
             else:
                 data[key] = value
         return schema.load(data).data
