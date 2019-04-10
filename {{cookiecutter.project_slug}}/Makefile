@@ -10,6 +10,9 @@ requirements-dev.txt: requirements-dev.in
 
 compile-deps: setuptools requirements.txt requirements-dev.txt
 
+install-deps:
+	@pip3 install -r requirements-dev.txt -r requirements.txt
+
 clean:
 	@rm -f dist/*
 	@find . -name '*.pyc' -or -name '*.pyo' -or -name '__pycache__' -type f -delete
