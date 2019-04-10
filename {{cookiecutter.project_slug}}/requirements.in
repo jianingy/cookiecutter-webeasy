@@ -11,4 +11,5 @@ peewee
 pike
 psycopg2-binary
 python-dateutil
+raven
 ujson
