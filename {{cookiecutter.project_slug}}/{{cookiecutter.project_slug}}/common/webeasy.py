@@ -12,9 +12,8 @@ import traceback
 import ujson
 
 from {{cookiecutter.project_slug}}.common.exceptions import ClientException
+from {{cookiecutter.project_slug}}.common.logging import LOG
 
-_LOG_FORMAT = '%(color)s[%(levelname)s] %(message)s%(end_color)s'
-LOG = logzero.setup_logger(formatter=logzero.LogFormatter(fmt=_LOG_FORMAT))
 RAVEN_CLIENT = raven.Client(os.environ['SENTRY_DSN'])
 
 

@@ -1,10 +1,8 @@
 # -*- coding: UTF-8 -*-
 import logging
-
 import logzero
+import os
 
-_FORMAT = '%(color)s[%(levelname)s] %(message)s%(end_color)s'
+_LOG_LEVEL = logging.DEBUG if os.environ.get('DEBUG', False) else logging.INFO
+LOG = logzero.setup_logger('interceptron.application', level=_LOG_LEVEL)
 
-LOG = logzero.setup_logger('{{cookiecutter.project_slug}}.application',
-                           level=logging.INFO,
-                           formatter=logzero.LogFormatter(fmt=_FORMAT))
