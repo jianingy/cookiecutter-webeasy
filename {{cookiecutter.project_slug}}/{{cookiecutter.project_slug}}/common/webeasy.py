@@ -4,7 +4,6 @@ from marshmallow.exceptions import ValidationError
 
 import falcon
 import functools
-import logzero
 import os
 import pike.discovery.py as discovery
 import raven
@@ -95,20 +94,31 @@ def schema(query=None, data=None, reply=None):
 
     def wrapper(function):
 
+        mimes = {
+            'form': 'application/x-www-form-urlencoded',
+            'json': 'application/json',
+        }
+
         @functools.wraps(function)
         def f(handler, *args, **kwargs):
             req, resp, *_ = args
             if query_schema and isinstance(query_schema, Schema):
                 kwargs.update({'query': _urldecode(query_schema, req.params)})
+            content_type = req.content_type or ''
             if data_schema and isinstance(data_schema, Schema):
                 body = req.stream.read().decode('UTF-8')
-                ctype = req.content_type or ''
-                if ctype.startswith('application/json'):
+                if content_type.startswith('application/json'):
                     body = body if body else '{}'
                     kwargs.update({'data': data_schema.loads(body).data})
-                elif ctype.startswith('application/x-www-form-urlencoded'):
+                elif content_type.startswith('application/x-www-form-urlencoded'):
                     params = falcon.uri.parse_query_string(body)
                     kwargs.update({'data': _urldecode(data_schema, params)})
+                else:
+                    kwargs.update({'data': body})
+            elif data_schema:
+                body = req.stream.read().decode('UTF-8')
+                if content_type.startswith(mimes['form']):
+                    kwargs.upate({'data': ujson.loads(body)})
                 else:
                     kwargs.update({'data': body})
 

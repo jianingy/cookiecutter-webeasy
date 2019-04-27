@@ -1,1 +1,1 @@
-web: env PYTHONUNBUFFERED=1 gunicorn -k gevent --reload {{cookiecutter.project_slug}}.app.mega_api.wsgi
+web: gunicorn -k gevent --reload {{cookiecutter.project_slug}}.app.mega_api.wsgi

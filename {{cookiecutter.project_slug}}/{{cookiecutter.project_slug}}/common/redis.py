@@ -3,9 +3,13 @@ from gevent import socket as gsocket
 import redis
 import redis.connection
 
-from .exceptions import RedisFactoryError
+from .exceptions import ServerException
 
 redis.connection.socket = gsocket
+
+
+class RedisFactoryError(ServerException):
+    error_code = 500002
 
 
 class RedisFactory:
