@@ -17,7 +17,7 @@ RAVEN_CLIENT = raven.Client(os.environ['SENTRY_DSN'])
 
 
 def _catch_all(error, req, resp, params):
-    if not (hasattr(error, 'alert_sentry') and error.alert_sentry):
+    if hasattr(error, 'alert_sentry') and error.alert_sentry:
         data = {
             'request': {
                 'url': req.url,
@@ -80,7 +80,6 @@ def create_app(module, middleware=[]):
 
 
 def schema(query=None, data=None, reply=None):
-
     query_schema, data_schema = query, data
 
     def _urldecode(schema, formdata):
@@ -106,18 +105,18 @@ def schema(query=None, data=None, reply=None):
                 kwargs.update({'query': _urldecode(query_schema, req.params)})
             content_type = req.content_type or ''
             if data_schema and isinstance(data_schema, Schema):
-                body = req.stream.read().decode('UTF-8')
-                if content_type.startswith('application/json'):
+                body = req.bounded_stream.read().decode('UTF-8')
+                if content_type.startswith(mimes['json']):
                     body = body if body else '{}'
                     kwargs.update({'data': data_schema.loads(body).data})
-                elif content_type.startswith('application/x-www-form-urlencoded'):
+                elif content_type.startswith(mimes['form']):
                     params = falcon.uri.parse_query_string(body)
                     kwargs.update({'data': _urldecode(data_schema, params)})
                 else:
                     kwargs.update({'data': body})
             elif data_schema:
-                body = req.stream.read().decode('UTF-8')
-                if content_type.startswith(mimes['form']):
+                body = req.bounded_stream.read().decode('UTF-8')
+                if content_type.startswith(mimes['json']):
                     kwargs.upate({'data': ujson.loads(body)})
                 else:
                     kwargs.update({'data': body})
