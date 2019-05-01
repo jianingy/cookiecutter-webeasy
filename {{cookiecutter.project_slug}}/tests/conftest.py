@@ -1,7 +1,6 @@
 # -*- coding: UTF-8 -*-
 from falcon import testing
 from pike.discovery import py as discovery
-
 import peewee
 import pytest
 

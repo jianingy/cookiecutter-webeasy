@@ -1,13 +1,13 @@
 # -*- coding: UTF-8 -*-
-from marshmallow import Schema
-from marshmallow.exceptions import ValidationError
-
-import falcon
 import functools
 import os
+import traceback
+
+from marshmallow import Schema
+from marshmallow.exceptions import ValidationError
+import falcon
 import pike.discovery.py as discovery
 import raven
-import traceback
 import ujson
 
 from {{cookiecutter.project_slug}}.common.exceptions import ClientException
@@ -35,7 +35,7 @@ def _catch_all(error, req, resp, params):
         data = error.data if hasattr(error, 'data') else None
         code = error.error_code if hasattr(error, 'error_code') else -1
         reason = error.message if hasattr(error, 'message') else str(error)
-        retval = dict(reason=reason, data=data, code=code)
+        retval = {'reason': reason, 'data': data, 'code': code}
         raise falcon.HTTPStatus(error.http_status_code,
                                 body=ujson.dumps(retval))
     if not isinstance(error, falcon.HTTPError):
@@ -46,7 +46,7 @@ def _catch_all(error, req, resp, params):
         LOG.error('^' * 78)
         code = error.error_code if hasattr(error, 'error_code') else -1
         reason = error.message if hasattr(error, 'message') else str(error)
-        retval = dict(reason=reason, data=data, code=code)
+        retval = {'reason': reason, 'data': data, 'code': code}
         if bool(os.environ.get('DEBUG', '')):
             retval['traceback'] = tb
         raise falcon.HTTPStatus(falcon.HTTP_INTERNAL_SERVER_ERROR,
@@ -56,14 +56,14 @@ def _catch_all(error, req, resp, params):
 
 
 def _catch_validation(error, req, resp, params):
-    body = ujson.dumps(dict(reason='VALIDATION_ERROR',
-                            detail=error.args[0],
-                            code=1))
+    body = ujson.dumps({'reason': 'VALIDATION_ERROR',
+                        'detail': error.args[0],
+                        'code': 1})
     raise falcon.HTTPStatus(falcon.HTTP_BAD_REQUEST, body=body)
 
 
-def create_app(module, middleware=[]):
-    app = falcon.API(middleware=middleware, independent_middleware=True)
+def create_app(module, middleware=None):
+    app = falcon.API(middleware=middleware or [], independent_middleware=True)
     num_routes = 0
     for v in discovery.get_all_classes(module):
         if hasattr(v, 'route') and isinstance(v.route, str):
@@ -79,17 +79,18 @@ def create_app(module, middleware=[]):
     return app
 
 
+def _urldecode(schema, formdata):
+    data = {}
+    for key, value in formdata.items():
+        if not key.endswith('[]'):
+            data[key] = value[-1] if isinstance(value, list) else value
+        else:
+            data[key] = value
+    return schema.load(data).data
+
+
 def schema(query=None, data=None, reply=None):
     query_schema, data_schema = query, data
-
-    def _urldecode(schema, formdata):
-        data = {}
-        for key, value in formdata.items():
-            if not key.endswith('[]'):
-                data[key] = value[-1] if isinstance(value, list) else value
-            else:
-                data[key] = value
-        return schema.load(data).data
 
     def wrapper(function):
 
@@ -131,7 +132,7 @@ def schema(query=None, data=None, reply=None):
                         resp.status = retval[2]
                 else:
                     code, data = 0, reply.dump(retval).data
-                resp.body = ujson.dumps(dict(code=code, data=data))
+                resp.body = ujson.dumps({'code': code, 'data': data})
             elif isinstance(retval, dict):
                 resp.content_type = falcon.MEDIA_JSON
                 resp.body = ujson.dumps(retval)

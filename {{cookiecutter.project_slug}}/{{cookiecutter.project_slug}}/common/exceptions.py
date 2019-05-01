@@ -1,6 +1,7 @@
 from typing import List
-import falcon
 import warnings
+
+import falcon
 
 
 _error_codes: List[int] = []

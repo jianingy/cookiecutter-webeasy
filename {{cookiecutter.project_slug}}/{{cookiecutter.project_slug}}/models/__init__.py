@@ -1,11 +1,12 @@
 # -*- coding: UTF-8 -*-
 from datetime import datetime
+import logging
+import os
+
 from peewee import AutoField, DateTimeField
 from peewee import Model as PeeweeModel
 from playhouse.db_url import connect as db_connect
 
-import logging
-import os
 
 database = db_connect(os.environ.get('DATABASE_URL', None))
 

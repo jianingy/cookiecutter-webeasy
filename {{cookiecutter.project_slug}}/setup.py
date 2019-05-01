@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
-from os.path import dirname, realpath, join as path_join
-from setuptools import setup, find_packages
+from os.path import dirname, join as path_join, realpath
+from setuptools import find_packages, setup
 
 from {{cookiecutter.project_slug}}.version import __version__
 
