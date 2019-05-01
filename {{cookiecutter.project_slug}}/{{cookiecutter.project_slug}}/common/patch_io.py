@@ -22,5 +22,6 @@ def _psycopg2_gevent_callback(conn, timeout=None):
             raise ValueError('poll() returned unexpected result')
 
 
-monkey.patch_all()
-patch_psycopg2()
+def patch_all():
+    monkey.patch_all()
+    patch_psycopg2()

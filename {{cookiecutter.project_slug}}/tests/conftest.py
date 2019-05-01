@@ -19,10 +19,10 @@ def db():
 
     def _filter(x):
         return all([
-                    issubclass(x, peewee.Model),
-                    hasattr(x, '_meta'),
-                    not x.__name__.startswith('_'),
-                ])
+            issubclass(x, peewee.Model),
+            hasattr(x, '_meta'),
+            not x.__name__.startswith('_'),
+        ])
 
     models = list(filter(_filter, discovery.classes_in_module(db_model)))
     database.drop_tables(models)
