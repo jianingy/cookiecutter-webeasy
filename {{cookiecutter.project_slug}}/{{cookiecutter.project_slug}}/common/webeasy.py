@@ -65,9 +65,10 @@ def _catch_validation(error, req, resp, params):
 def create_app(module, middleware=None):
     app = falcon.API(middleware=middleware or [], independent_middleware=True)
     num_routes = 0
+    LOG.info(f'Discover route from {module.__name__}:')
     for v in discovery.get_all_classes(module):
         if hasattr(v, 'route') and isinstance(v.route, str):
-            LOG.info(f'Adding route {v.route} from {v.__name__} ...')
+            LOG.info(f'\t+ {v.route} ({v.__name__})')
             app.add_route(v.route, v())
             num_routes += 1
     LOG.info(f'#{num_routes} routes has been successfully added.')
