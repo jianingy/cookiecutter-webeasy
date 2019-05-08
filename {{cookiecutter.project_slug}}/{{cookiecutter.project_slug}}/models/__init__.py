@@ -3,7 +3,7 @@ from datetime import datetime
 import logging
 import os
 
-from peewee import AutoField, DateTimeField
+from peewee import AutoField, DateTimeField, SQL
 from peewee import Model as PeeweeModel
 from playhouse.db_url import connect as db_connect
 
@@ -24,5 +24,6 @@ class _BaseModel(PeeweeModel):
 
 class _BaseRecordModel(_BaseModel):
     id_ = AutoField(column_name='id', primary_key=True)
-    created_at = DateTimeField(default=datetime.now)
-    updated_at = DateTimeField(default=datetime.now)
+    created_at = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+    updated_at = DateTimeField(constraints=[SQL('DEFAULT CURRENT_TIMESTAMP')])
+
