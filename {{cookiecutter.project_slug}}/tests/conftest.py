@@ -24,5 +24,4 @@ def db():
         ])
 
     models = list(filter(_filter, discovery.classes_in_module(db_model)))
-    database.drop_tables(models)
     database.create_tables(models)

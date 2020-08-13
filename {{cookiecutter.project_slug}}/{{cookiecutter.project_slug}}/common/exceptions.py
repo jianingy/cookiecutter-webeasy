@@ -13,8 +13,7 @@ class _MetaException(type):
         qualname = body['__qualname__']
         new_class = type.__new__(cls, name, bases, body)
         if new_class.error_code in _error_codes:
-            warnings.warn(f'{qualname} has duplicated error_code',
-                          stacklevel=2)
+            raise RuntimeError(f'{qualname} has duplicated error_code')
         else:
             _error_codes.append(new_class.error_code)
         return new_class

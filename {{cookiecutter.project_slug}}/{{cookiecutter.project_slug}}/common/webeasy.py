@@ -11,7 +11,7 @@ import raven
 import ujson
 
 from {{cookiecutter.project_slug}}.common.exceptions import ClientException
-from {{cookiecutter.project_slug}}.common.logging import LOG
+from {{cookiecutter.project_slug}}.common.logger import LOG
 
 RAVEN_CLIENT = raven.Client(os.environ['SENTRY_DSN'])
 
@@ -119,14 +119,14 @@ def schema(query=None, data=None, reply=None):
             elif data_schema:
                 body = req.bounded_stream.read().decode('UTF-8')
                 if content_type.startswith(mimes['json']):
-                    kwargs.upate({'data': ujson.loads(body)})
+                    kwargs.update({'data': ujson.loads(body)})
                 else:
                     kwargs.update({'data': body})
 
             retval = function(handler, *args, **kwargs)
 
             if reply and isinstance(reply, Schema):
-                resp.content_type = falcon.MEDIA_JSON
+                resp.content_type = resp.content_type or falcon.MEDIA_JSON
                 if isinstance(retval, tuple) and len(retval) > 1:
                     code, data = int(retval[0]), reply.dump(retval[1]).data
                     if len(retval) > 2:
@@ -135,8 +135,8 @@ def schema(query=None, data=None, reply=None):
                     code, data = 0, reply.dump(retval).data
                 resp.body = ujson.dumps({'code': code, 'data': data})
             elif isinstance(retval, dict):
-                resp.content_type = falcon.MEDIA_JSON
-                resp.body = ujson.dumps(retval)
+                resp.content_type = resp.content_type or falcon.MEDIA_JSON
+                resp.body = ujson.dumps(retval, reject_bytes=False)
             else:
                 resp.content_type = falcon.MEDIA_TEXT
                 resp.body = str(retval)
